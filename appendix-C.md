@@ -2,8 +2,9 @@
 # Appendix C
 # Review of Essential Statistics for Astronomers
 ---
+![imagem](imagem.png)
 
-This appendix provides a concise review of fundamental statistical concepts and methods frequently encountered in the analysis and interpretation of astronomical data. While not intended as a comprehensive statistics course, it aims to refresh key ideas discussed implicitly or explicitly throughout the book, such as probability distributions, parameter estimation, hypothesis testing, and correlation analysis. A solid grasp of these statistical foundations is crucial for drawing robust scientific conclusions from inherently noisy and often complex astronomical measurements (Feigelson & Babu, 2012; Wall & Jenkins, 2012; Gregory, 2005).
+*This appendix provides a concise review of fundamental statistical concepts and methods frequently encountered in the analysis and interpretation of astronomical data. While not intended as a comprehensive statistics course, it aims to refresh key ideas discussed implicitly or explicitly throughout the book, such as probability distributions, parameter estimation, hypothesis testing, and correlation analysis. A solid grasp of these statistical foundations is crucial for drawing robust scientific conclusions from inherently noisy and often complex astronomical measurements (Feigelson & Babu, 2012; Wall & Jenkins, 2012; Gregory, 2005).*
 
 ---
 
