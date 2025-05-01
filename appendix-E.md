@@ -2,8 +2,9 @@
 # Appendix E
 # Glossary of Astrocomputing Terminology
 ---
+![imagem](imagem.png)
 
-This glossary provides definitions for key terms used throughout the book, covering concepts from astronomy, data processing, statistics, machine learning, high-performance computing, and scientific practice relevant to astrocomputing.
+*This glossary provides definitions for key terms used throughout the book, covering concepts from astronomy, data processing, statistics, machine learning, high-performance computing, and scientific practice relevant to astrocomputing.*
 
 ---
 
