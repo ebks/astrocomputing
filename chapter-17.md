@@ -181,7 +181,7 @@ The Virtual Observatory (VO) represents a global, collaborative effort to connec
     *   **TAP (Table Access Protocol):** For querying tabular catalogs using ADQL (Sections 10.2, 16.8). Essential for accessing large survey catalogs (Gaia, SDSS, Pan-STARRS, WISE, etc.) stored in databases at major data centers.
     *   **SIA (Simple Image Access) / SIAv2:** For discovering and accessing image data based on sky position, wavelength, time, etc. Returns metadata (including WCS) and access URLs for matching images.
     *   **SSA (Simple Spectral Access):** Similar to SIA, but for discovering and accessing 1D spectral data. Returns metadata and access URLs for spectra matching query criteria.
-    *   **DataLink:** Allows discovery of related data products (e.g., calibration files, weight maps, source lists) associated with a primary dataset identified via TAP, SIA, or SSA (Section 17.5). Crucial for obtaining the complete data context needed for analysis or reproduction.
+    *   **DataLink:** Allows discovery of related data products (e.g., calibration files, weight maps, source lists) associated with a primary dataset identified via TAP, SIA, or SSA (Dowler et al., 2015; IVOA DataLink Recommendation). Crucial for obtaining the complete data context needed for analysis or reproduction.
 
 *   **17.6.3 Federated Queries (`pyvo`, `astroquery`):** While individual VO services can be queried directly, powerful workflows often involve combining information from multiple catalogs hosted at different data centers. Tools built upon VO protocols can facilitate **federated queries** – queries that effectively join or cross-match information across distributed resources. Although true distributed joins within a single ADQL query are complex and not universally supported, libraries like `pyvo` and `astroquery` allow users to script multi-step queries: retrieve data from one service (e.g., source list from Gaia via TAP), use those results to query another service (e.g., retrieve corresponding photometry from Pan-STARRS via TAP or Cone Search), and combine the results locally. This programmatic combination of distributed datasets is a key collaborative capability enabled by the VO. Example 17.8.5 illustrates a complex query.
 
@@ -227,7 +227,7 @@ Key aspects include:
     *   **Validation:** Checking metadata completeness and consistency (e.g., validating WCS keywords, ensuring required keywords are present).
     *   **Enrichment:** Adding value by linking datasets to publications (e.g., via ADS), cross-matching with other catalogs, or generating higher-level metadata like UCDs or data quality summaries.
 
-*   **17.7.5 Persistent Identifiers (DOIs) for Data & Software:** Assigning persistent identifiers, primarily Digital Object Identifiers (DOIs), to datasets and software versions is crucial for reliable citation and linking (Section 16.7). Archives and repositories like Zenodo provide DOI minting services, enabling researchers to cite the exact data and software used in their publications, enhancing transparency and reproducibility.
+*   **17.7.5 Persistent Identifiers (DOIs) for Data & Software:** Assigning persistent identifiers, primarily Digital Object Identifiers (DOIs), to datasets and software versions is crucial for reliable citation and linking (Section 16.7). Archives and repositories like Zenodo provide DOI minting services, enabling researchers to cite the exact data and software used in their publications, enhancing transparency and reproducibility (Muna et al., 2023).
 
 Effective data administration, management, and curatorship provided by archives and enabled by practices like DMPs and use of persistent identifiers are foundational pillars supporting collaborative and reproducible science in the data-rich era of astronomy.
 
@@ -402,7 +402,7 @@ if dask_available:
 
     # --- Convert Pandas DataFrame to Dask DataFrame ---
     # Partition the DataFrame for parallel processing
-    npartitions = os.cpu_count() * 2 # Example: 2 partitions per worker
+    npartitions = (os.cpu_count() or 2) * 2 # Example: 2 partitions per worker
     ddf = dd.from_pandas(pdf, npartitions=npartitions)
     print(f"Converted Pandas DataFrame to Dask DataFrame with {ddf.npartitions} partitions.")
 
@@ -441,10 +441,9 @@ else:
     print("Skipping Stellar Dask fitting example: Dask unavailable.")
 
 ```
+**Explanation:** This Python script demonstrates how Dask can parallelize a computationally intensive task – fitting a model to each star in a large catalog – across multiple CPU cores. It first simulates a large stellar catalog as a Pandas DataFrame, then converts it into a Dask DataFrame (`ddf`), which partitions the data across available resources. A function `fit_star_partition` is defined to perform the hypothetical model fitting operation on a single *partition* (a smaller Pandas DataFrame). The key parallelization step uses `ddf.map_partitions(fit_star_partition, ...)`. This Dask operation applies the `fit_star_partition` function independently and in parallel to each partition of the Dask DataFrame using the Dask scheduler (here, configured with a `LocalCluster` to use local CPU cores). The computation is lazy; it only executes when a result is requested, for instance, by calling `.compute()` on an aggregation like the mean of a result column. Dask manages the distribution of partitions to worker processes and collects the results, significantly reducing the total execution time for applying the fitting function to the entire large catalog compared to serial processing.
 
-This Python script demonstrates how Dask can parallelize a computationally intensive task – fitting a model to each star in a large catalog – across multiple CPU cores. It first simulates a large stellar catalog as a Pandas DataFrame, then converts it into a Dask DataFrame (`ddf`), which partitions the data across available resources. A function `fit_star_partition` is defined to perform the hypothetical model fitting operation on a single *partition* (a smaller Pandas DataFrame). The key parallelization step uses `ddf.map_partitions(fit_star_partition, ...)`. This Dask operation applies the `fit_star_partition` function independently and in parallel to each partition of the Dask DataFrame using the Dask scheduler (here, configured with a `LocalCluster` to use local CPU cores). The computation is lazy; it only executes when a result is requested, for instance, by calling `.compute()` on an aggregation like the mean of a result column. Dask manages the distribution of partitions to worker processes and collects the results, significantly reducing the total execution time for applying the fitting function to the entire large catalog compared to serial processing.
-
-**11.7.4 Exoplanetary: Simulation of GitHub Pull Request Code Review**
+**17.8.4 Exoplanetary: Simulation of GitHub Pull Request Code Review**
 Effective code review is vital for collaborative projects, ensuring code quality and catching errors before merging changes (Section 17.1.2). This example simulates the *process* and *communication* aspect of a code review for a hypothetical Pull Request (PR) on GitHub, focusing on the types of comments and discussion involved rather than executable code.
 
 ```markdown
@@ -466,12 +465,13 @@ This PR implements quadratic limb darkening correction in the `transit_fitter.py
      inc: float,
      ecc: float = 0.0,
      omega: float = 90.0,
++    times: np.ndarray, # Added times array
 +    u1: float = 0.0, # Limb darkening coeff 1
 +    u2: float = 0.0, # Limb darkening coeff 2
  ) -> np.ndarray:
-     """Calculates transit depth using simplified geometric model."""
+     """Calculates transit light curve with limb darkening. Returns normalized flux."""
      # ... existing code ...
-@@ -60,7 +61,11 @@
+@@ -60,15 +61,11 @@
      # Naive depth calculation (no limb darkening)
      # depth = rp_rs**2
 
@@ -479,38 +479,73 @@ This PR implements quadratic limb darkening correction in the `transit_fitter.py
 -    # For now, return simple box model based on geometry
 -    # ... simplified box model code ...
 -    return depth_array # placeholder return
-+    # Use batman-package for accurate model with limb darkening
-+    import batman
-+    params = batman.TransitParams()
-+    params.t = times # Need times as input now! Function signature changed.
-+    params.t0 = t0; params.per = per; params.rp = rp_rs; params.a = a_rs
-+    params.inc = inc; params.ecc = ecc; params.w = omega
-+    params.u = [u1, u2]; params.limb_dark = "quadratic"
-+    m = batman.TransitModel(params, times)
-+    flux_model = m.light_curve(params)
-+    return 1.0 - flux_model # Return depth relative to continuum=1
+-
+     # Use batman-package for accurate model with limb darkening
+-    import batman
++    # import moved to top
+     params = batman.TransitParams()
+-    params.t = times # Need times as input now! Function signature changed.
++    # Need to pass time to TransitModel, not params.t
++    # params.t = times
+     params.t0 = t0; params.per = per; params.rp = rp_rs; params.a = a_rs
+     params.inc = inc; params.ecc = ecc; params.w = omega
+     params.u = [u1, u2]; params.limb_dark = "quadratic"
+     m = batman.TransitModel(params, times)
+     flux_model = m.light_curve(params)
+-    return 1.0 - flux_model # Return depth relative to continuum=1
++    return flux_model # Return normalized flux
 
 ```
 ```diff
 --- a/tests/test_fitter.py
 +++ b/tests/test_fitter.py
-@@ -25,3 +25,16 @@
+@@ -1,4 +1,5 @@
+ import numpy as np
++import batman # Import for verification calculation
+ from src.transit_fitter import calculate_transit_lightcurve # Function name updated
+
+ def test_basic_transit_depth():
+@@ -25,14 +26,31 @@
      # ... existing tests ...
      pass
 
-+def test_transit_depth_with_limb_darkening():
-+    """Test depth calculation with non-zero limb darkening."""
-+    # Define times spanning a transit
+-def test_transit_depth_with_limb_darkening():
+-    """Test depth calculation with non-zero limb darkening."""
+-    # Define times spanning a transit
++def test_transit_lightcurve_with_limb_darkening():
++    """Test lightcurve calculation with non-zero limb darkening."""
+     times = np.linspace(-0.1, 0.1, 100)
+-    # Expected parameters
+-    t0=0.0; per=3.5; rp_rs=0.1; a_rs=10.0; inc=90.0; u1=0.4; u2=0.2
+-    depth = calculate_transit_depth(times, t0, per, rp_rs, a_rs, inc, u1=u1, u2=u2)
+-    # Check mid-transit depth is reasonable (approx rp_rs^2 but modified by LD)
+-    assert np.min(depth) > 0.009 and np.min(depth) < 0.011 # Allow range
++    # Parameters matching batman example somewhat
++    t0=0.0; per=3.5; rp_rs=0.1; a_rs=10.0; inc=87.0; u1=0.1; u2=0.3
++    flux = calculate_transit_lightcurve(times, t0, per, rp_rs, a_rs, inc, times, u1=u1, u2=u2) # Pass times arg
++    # Verify against direct batman calculation
++    params_test = batman.TransitParams()
++    params_test.t0=t0; params_test.per=per; params_test.rp=rp_rs; params_test.a=a_rs
++    params_test.inc=inc; params_test.ecc=0; params_test.w=90
++    params_test.u=[u1, u2]; params_test.limb_dark="quadratic"
++    m_test = batman.TransitModel(params_test, times)
++    flux_expected = m_test.light_curve(params_test)
++    np.testing.assert_allclose(flux, flux_expected, rtol=1e-6)
+     # Check depth is zero far from transit
+-    assert np.isclose(depth[0], 0.0)
+-    assert np.isclose(depth[-1], 0.0)
++    assert np.isclose(flux[0], 1.0)
++    assert np.isclose(flux[-1], 1.0)
++
++def test_grazing_transit_limb_darkening():
++    """Test grazing transit with limb darkening."""
 +    times = np.linspace(-0.1, 0.1, 100)
-+    # Expected parameters
-+    t0=0.0; per=3.5; rp_rs=0.1; a_rs=10.0; inc=90.0; u1=0.4; u2=0.2
-+    depth = calculate_transit_depth(times, t0, per, rp_rs, a_rs, inc, u1=u1, u2=u2)
-+    # Check mid-transit depth is reasonable (approx rp_rs^2 but modified by LD)
-+    assert np.min(depth) > 0.009 and np.min(depth) < 0.011 # Allow range
-+    # Check depth is zero far from transit
-+    assert np.isclose(depth[0], 0.0)
-+    assert np.isclose(depth[-1], 0.0)
-
++    t0=0.0; per=3.5; rp_rs=0.1; a_rs=10.0; inc=89.5; u1=0.1; u2=0.3 # Grazing inc
++    flux = calculate_transit_lightcurve(times, t0, per, rp_rs, a_rs, inc, times, u1=u1, u2=u2)
++    # Check it's shallower than central transit and V-shaped (min > 1-rp^2)
++    assert np.min(flux) > (1.0 - rp_rs**2)
++    assert not np.isclose(np.min(flux), flux[len(flux)//2 - 5]) # Check not flat bottom
++
 ```
 ---
 **Review Comments:**
@@ -537,157 +572,248 @@ Looks like a good implementation using `batman`. Thanks for adding this importan
 Thanks @AstroCollaborator2 for the quick and helpful review! Addressed your points:
 *   Updated function signature in `transit_fitter.py` to include `times`.
 *   Moved `import batman` to the top.
-*   Updated the docstring for `calculate_transit_depth` to clarify it returns normalized flux depth (1 - flux).
+*   Renamed function to `calculate_transit_lightcurve` and updated docstring to clarify it returns normalized flux (1.0=baseline).
 *   Added a new test case `test_grazing_transit_limb_darkening` in `test_fitter.py`.
-*   Updated the mid-transit depth assertion in the original test to compare against a `batman` calculation for those specific parameters.
+*   Updated the assertion in the original test to compare against a direct `batman` calculation for those specific parameters.
 
-Ready for another look!
+Ready for another look! (Updated diffs showing these changes are included in the actual PR history).
 
 ```
-**Explanation:** This markdown block simulates a GitHub Pull Request (PR) interaction focused on code review (Section 17.1.2). The author (AstroDev1) proposes changes to add limb darkening to a transit fitting function, providing a description and linking to code diffs (represented concisely here). A reviewer (AstroCollaborator2) examines the changes and leaves specific, constructive comments directly referencing file lines. The comments point out issues like a missing function argument, suggest standard import practices, question the function's output representation, and recommend adding a more robust test case. The author responds, indicating they have addressed the comments by making specific code changes (which would appear as further commits on the PR branch). This iterative process of proposing changes, reviewing, revising, and re-reviewing, facilitated by the PR interface, is central to collaborative software development, ensuring higher code quality and shared understanding before changes are merged into the main codebase.
+**Explanation:** This markdown block simulates a GitHub Pull Request (PR) interaction focused on code review (Section 17.1.2). The author (AstroDev1) proposes changes to add limb darkening to a transit fitting function, providing a description and linking to code diffs (represented concisely here). A reviewer (AstroCollaborator2) examines the changes and leaves specific, constructive comments directly referencing file lines. The comments point out issues like a missing function argument, suggest standard import practices, question the function's output representation, and recommend adding a more robust test case. The author responds, indicating they have addressed the comments by making specific code changes (which would appear as further commits on the PR branch, reflected partially in the updated diffs shown). This iterative process of proposing changes, reviewing, revising, and re-reviewing, facilitated by the PR interface, is central to collaborative software development, ensuring higher code quality and shared understanding before changes are merged into the main codebase.
 
-**11.7.7 Cosmology: GPU Training of CNN for Parameter Estimation**
-Estimating cosmological parameters (like $\Omega_m$, $\sigma_8$) from observational data like weak lensing maps or large-scale structure density fields is a key goal in cosmology. Deep Learning, particularly CNNs, can learn to extract relevant features directly from these map-like datasets and perform regression to estimate parameters, potentially capturing non-Gaussian information missed by traditional summary statistics (e.g., Villaescusa-Navarro et al., 2021; Jeffrey et al., 2021). Training these deep CNNs on large sets of simulated maps is computationally intensive and significantly benefits from GPU acceleration. This example conceptually outlines defining a CNN model using `tensorflow.keras` (similar to Example 10.6.7 but for regression) and highlights the code modifications needed to ensure training occurs on an available GPU, leveraging the framework's built-in GPU support.
+**17.8.5 Galactic: Complex TAP Query Script using `pyvo`**
+Combining data from multiple large catalogs hosted at different VO-enabled data centers is often necessary for comprehensive Galactic studies. This might involve querying one catalog (e.g., Gaia for astrometry), selecting objects based on certain criteria, and then using those object positions to query another catalog (e.g., an infrared survey like WISE or 2MASS via VizieR TAP) for corresponding photometry. This example demonstrates a Python script using `pyvo` to perform such a two-step "federated" query workflow. It first queries Gaia for nearby stars and then uses their coordinates to query VizieR (conceptually, using the 2MASS catalog) for their J, H, K magnitudes.
 
 ```python
 import numpy as np
-# Requires tensorflow: pip install tensorflow
+from astropy.table import Table, join
+from astropy.coordinates import SkyCoord
+import astropy.units as u
+# Requires pyvo: pip install pyvo
 try:
-    import tensorflow as tf
-    from tensorflow import keras
-    from tensorflow.keras import layers
-    tensorflow_available = True
-    # Check for GPU availability
-    gpus = tf.config.list_physical_devices('GPU')
-    if gpus:
-        try:
-            # Enable memory growth to avoid allocating all GPU memory at once
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            print(f"TensorFlow found {len(gpus)} GPU(s): {gpus}")
-            gpu_available = True
-        except RuntimeError as e:
-            # Memory growth must be set before GPUs have been initialized
-            print(f"TensorFlow GPU setup error: {e}")
-            gpu_available = False
-    else:
-        print("TensorFlow did not find any GPUs. Training will use CPU.")
-        gpu_available = False
-
+    import pyvo as vo
+    pyvo_available = True
 except ImportError:
-    print("TensorFlow/Keras not found, skipping Cosmology CNN regression example.")
-    tensorflow_available = False
-    gpu_available = False
-import matplotlib.pyplot as plt
-import time
+    print("pyvo not found, skipping complex VO query example.")
+    pyvo_available = False
+import warnings
 
-# --- Conceptual Example: CNN for Cosmological Parameter Regression ---
-# Focuses on model definition and noting GPU usage.
-# Assumes input data X: image maps (e.g., weak lensing convergence maps)
-# Assumes output data y: corresponding cosmological parameters (e.g., Omega_m, sigma_8)
+# --- Query Parameters ---
+# Define search center and radius for initial Gaia query
+search_center = SkyCoord(ra=266.4*u.deg, dec=-29.0*u.deg, frame='icrs') # Example: Galactic Center region
+search_radius = 15.0 * u.arcmin
+# Define criteria for Gaia stars
+parallax_min = 1.0 # mas (within 1 kpc)
+g_mag_max = 15.0
+# Define match radius for cross-matching Gaia positions to 2MASS
+cross_match_radius = 2.0 * u.arcsec
 
-if tensorflow_available:
-    print("\nDefining conceptual CNN model for Cosmological Parameter Regression...")
+# --- VO Service URLs ---
+# Use real service URLs (check availability via VO registry or websites)
+gaia_tap_url = "https://gea.esac.esa.int/tap-server/tap"
+# VizieR TAP service for accessing catalogs like 2MASS
+vizier_tap_url = "http://tapvizier.u-strasbg.fr/TAPVizieR/tap"
+# 2MASS catalog table name in VizieR (check exact name)
+twomass_table = "II/246/out"
 
-    # Example input shape: (map_size, map_size, n_channels)
-    input_shape_example = (128, 128, 1) # Example: 128x128 map, 1 channel (e.g., density)
+# --- Step 1: Query Gaia using pyvo TAP ---
+if pyvo_available:
+    print(f"Step 1: Querying Gaia TAP ({gaia_tap_url})...")
+    # Construct ADQL query for Gaia
+    gaia_adql = f"""
+    SELECT TOP 2000 source_id, ra, dec, parallax, phot_g_mean_mag
+    FROM gaiadr3.gaia_source
+    WHERE 1=CONTAINS(POINT('ICRS', ra, dec),
+                     CIRCLE('ICRS', {search_center.ra.deg}, {search_center.dec.deg}, {search_radius.to(u.deg).value}))
+      AND parallax IS NOT NULL AND parallax > {parallax_min}
+      AND phot_g_mean_mag < {g_mag_max}
+    """
+    gaia_results_table = None
+    try:
+        gaia_service = vo.dal.TAPService(gaia_tap_url)
+        # Use synchronous query for potentially smaller results
+        gaia_results = gaia_service.search(gaia_adql)
+        gaia_results_table = gaia_results.to_table()
+        print(f"  Retrieved {len(gaia_results_table)} stars from Gaia.")
+    except Exception as e:
+        print(f"  Gaia query failed: {e}")
 
-    # Example output shape: number of parameters to predict
-    n_output_params = 2 # Example: Predict Omega_m and sigma_8
+    # --- Step 2: Query VizieR/2MASS for counterparts ---
+    if gaia_results_table is not None and len(gaia_results_table) > 0:
+        print(f"\nStep 2: Querying VizieR TAP ({vizier_tap_url}) for 2MASS counterparts...")
+        # Construct an ADQL query for 2MASS, matching Gaia positions
+        # Build a string containing Gaia positions for an UPLOAD query or multiple OR conditions
+        # Option: UPLOAD table (more complex but efficient for many sources)
+        # Option: Build large WHERE clause (simpler for fewer sources)
+        # Let's build WHERE clause for < ~100 sources for simplicity, else UPLOAD needed
+        max_sources_for_where = 100
+        if len(gaia_results_table) > max_sources_for_where:
+             print(f"  Warning: Too many Gaia sources ({len(gaia_results_table)}) for simple WHERE clause query.")
+             print("  Consider using TAP UPLOAD or querying in batches.")
+             # Truncate for example
+             gaia_results_table = gaia_results_table[:max_sources_for_where]
+             print(f"  Using only first {len(gaia_results_table)} sources for VizieR query.")
 
-    # --- Define CNN Model Architecture (Example Regression Model) ---
-    model = keras.Sequential(
-        [
-            keras.Input(shape=input_shape_example),
-            # Convolutional Blocks
-            layers.Conv2D(32, kernel_size=(5, 5), activation="relu", padding='same'),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Conv2D(64, kernel_size=(3, 3), activation="relu", padding='same'),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Conv2D(128, kernel_size=(3, 3), activation="relu", padding='same'),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            # Flatten and Dense Layers
-            layers.Flatten(),
-            layers.Dense(256, activation="relu"),
-            layers.Dropout(0.4),
-            layers.Dense(128, activation="relu"),
-            # Output Layer: Linear activation for regression, units = n_output_params
-            layers.Dense(units=n_output_params, activation="linear"),
-        ]
-    )
-    model.summary()
+        # Build the condition string for matching within cross_match_radius
+        conditions = []
+        for row in gaia_results_table:
+             # 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', ra_gaia, dec_gaia, radius_deg))
+             conditions.append(
+                 f"1=CONTAINS(POINT('ICRS', ra, dec), "
+                 f"CIRCLE('ICRS', {row['ra']:.8f}, {row['dec']:.8f}, {cross_match_radius.to(u.deg).value:.8f}))"
+             )
+        where_clause = " OR ".join(conditions)
 
-    # --- Compile the Model for Regression ---
-    # Use appropriate loss function (e.g., Mean Squared Error) and metrics
-    optimizer = keras.optimizers.Adam(learning_rate=1e-4)
-    model.compile(optimizer=optimizer, loss="mse", metrics=["mae"]) # Mean Absolute Error
-    print("\nModel compiled for regression (MSE loss).")
+        # Construct full 2MASS query
+        twomass_adql = f"""
+        SELECT
+          "2MASS" as twomass_id, ra, dec, Jmag, Hmag, Kmag -- Column names specific to VizieR 2MASS table
+        FROM
+          "{twomass_table}"
+        WHERE
+          {where_clause}
+        """
+        # print("2MASS ADQL Query (simplified):", twomass_adql[:500] + "...") # Debugging
 
-    # --- Simulate Training Data (Highly Simplified) ---
-    # In reality, load large suites of simulation maps and parameters
-    print("Simulating dummy training/validation data...")
-    n_train = 500
-    n_val = 100
-    # Generate data as float32, common for DL
-    X_train_sim = np.random.rand(n_train, *input_shape_example).astype(np.float32)
-    # Simulate parameters related to input mean (very unrealistic, just for demo)
-    y_train_sim = (np.random.rand(n_train, n_output_params).astype(np.float32) *
-                   np.mean(X_train_sim, axis=(1,2,3), keepdims=True)*0.1 +
-                   np.array([[0.3, 0.8]], dtype=np.float32)) # Omega_m ~ 0.3, sigma_8 ~ 0.8 baseline
+        twomass_results_table = None
+        try:
+            vizier_service = vo.dal.TAPService(vizier_tap_url)
+            with warnings.catch_warnings(): # Suppress potential VOTable warnings
+                 warnings.simplefilter("ignore", vo.exceptions.VOTableChangeWarning)
+                 twomass_results = vizier_service.search(twomass_adql)
+            twomass_results_table = twomass_results.to_table()
+            print(f"  Retrieved {len(twomass_results_table)} potential 2MASS counterparts.")
+        except Exception as e:
+            print(f"  VizieR/2MASS query failed: {e}")
 
-    X_val_sim = np.random.rand(n_val, *input_shape_example).astype(np.float32)
-    y_val_sim = (np.random.rand(n_val, n_output_params).astype(np.float32) *
-                 np.mean(X_val_sim, axis=(1,2,3), keepdims=True)*0.1 +
-                 np.array([[0.3, 0.8]], dtype=np.float32))
+        # --- Step 3: Cross-match results locally and combine ---
+        if twomass_results_table is not None and len(twomass_results_table) > 0:
+            print("\nStep 3: Cross-matching Gaia and 2MASS results locally...")
+            # Create SkyCoord objects for local matching
+            gaia_match_coords = SkyCoord(ra=gaia_results_table['ra']*u.deg, dec=gaia_results_table['dec']*u.deg)
+            twomass_match_coords = SkyCoord(ra=twomass_results_table['ra']*u.deg, dec=twomass_results_table['dec']*u.deg)
 
-    # --- Train the Model (Utilizing GPU if Available) ---
-    print("\nStarting conceptual model training...")
-    epochs = 5 # Small number for demo
-    batch_size = 16
+            # Match 2MASS sources TO Gaia sources (find best Gaia match for each 2MASS source)
+            idx_gaia, sep2d, _ = twomass_match_coords.match_to_catalog_sky(gaia_match_coords)
 
-    # TensorFlow/Keras automatically uses available GPUs if detected and configured correctly.
-    # The tf.config checks at the start help confirm GPU detection.
-    device_used = "/GPU:0" if gpu_available else "/CPU:0"
-    print(f"Attempting training on device: {device_used}")
-    start_time_train = time.time()
-    # Use tf.device context manager for explicit placement if needed, but usually automatic
-    # with tf.device(device_used):
-    history = model.fit(X_train_sim, y_train_sim,
-                        batch_size=batch_size,
-                        epochs=epochs,
-                        validation_data=(X_val_sim, y_val_sim),
-                        verbose=1) # Print progress
-    end_time_train = time.time()
-    time_train = end_time_train - start_time_train
+            # Filter based on separation threshold
+            match_mask = sep2d <= cross_match_radius
+            num_local_matches = np.sum(match_mask)
+            print(f"  Found {num_local_matches} matches after local verification within {cross_match_radius}.")
 
-    # Re-check device used if possible (might just show CPU if GPU fails silently)
-    device_name_actual = "GPU" if gpu_available else "CPU" # Based on initial check
-    print(f"\nTraining complete (nominally on {device_name_actual}) in {time_train:.2f} seconds.")
+            # Combine tables based on the match
+            # Select matched rows from both tables
+            matched_twomass = twomass_results_table[match_mask]
+            corresponding_gaia_indices = idx_gaia[match_mask]
+            # Add Gaia source ID to 2MASS table for joining
+            matched_twomass['gaia_source_id'] = gaia_results_table['source_id'][corresponding_gaia_indices]
+            # Perform table join using the Gaia source ID
+            # Need to ensure unique matches if multiple 2MASS sources match one Gaia source
+            # Simplistic join assumes unique matches for now
+            final_table = join(gaia_results_table, matched_twomass['gaia_source_id', 'Jmag', 'Hmag', 'Kmag'],
+                               keys='source_id', join_type='inner')
 
-    # --- Evaluate (Conceptual) ---
-    # loss, mae = model.evaluate(X_test_sim, y_test_sim)
-    # print(f"Test Loss (MSE): {loss:.4f}, Test MAE: {mae:.4f}")
-    print("(Model evaluation on a separate test set would follow)")
+            print("\nFinal Combined Catalog (Gaia + 2MASS, first 10 rows):")
+            print(final_table[:10])
 
-    # --- Plot Training History (Loss) ---
-    plt.figure(figsize=(8, 5))
-    plt.plot(history.history['loss'], label='Training Loss (MSE)')
-    plt.plot(history.history['val_loss'], label='Validation Loss (MSE)')
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss (MSE)")
-    plt.title(f"CNN Training History ({device_name_actual})")
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.yscale('log') # Often useful for loss plots
-    plt.show()
+        else:
+            print("\nNo 2MASS counterparts found or query failed, cannot combine.")
+    else:
+        print("\nSkipping VizieR query as Gaia query failed or returned no results.")
 
 else:
-    print("Skipping Cosmology CNN regression example: TensorFlow/Keras unavailable.")
+    print("Skipping Galactic VO query example: pyvo unavailable.")
 ```
+**Explanation:** This script demonstrates a multi-step workflow using `pyvo` to combine data from different VO services, mimicking a common task in Galactic studies (Section 17.6.3). First, it connects to the Gaia archive's TAP service and executes an ADQL query to retrieve nearby, bright stars based on parallax and magnitude constraints. Then, it constructs a *second* ADQL query for a different TAP service (here, VizieR, targeting the 2MASS catalog). This second query is designed to retrieve 2MASS sources located very close (within a small `cross_match_radius`) to the positions of the stars found in the initial Gaia query, effectively searching for counterparts. **Note:** Constructing the `WHERE` clause with many `CIRCLE` conditions can be inefficient for large numbers of sources; real applications often use TAP table uploads for the position list. Finally, after retrieving results from both queries, the script performs a *local* cross-match using `astropy.coordinates.match_to_catalog_sky` to robustly associate the Gaia sources with their nearest 2MASS counterparts within the specified radius and joins the relevant information from both catalogs into a single final table. This exemplifies how VO tools enable reproducible, scripted workflows combining distributed datasets.
 
-This final Python script provides a conceptual demonstration of using a Convolutional Neural Network (CNN) for cosmological parameter estimation from map-like data (e.g., weak lensing maps), highlighting the utilization of GPU acceleration via the `tensorflow.keras` framework. It defines a CNN architecture suitable for regression, with convolutional layers to extract spatial features from input maps and dense layers culminating in an output layer with linear activation predicting multiple continuous cosmological parameters (e.g., $\Omega_m$, $\sigma_8$). The script includes checks for GPU availability using `tf.config.list_physical_devices('GPU')` and enables memory growth for stability. The model is compiled with an appropriate regression loss function (Mean Squared Error). Crucially, the training step, executed using `model.fit()`, **automatically utilizes any detected and configured GPU** without requiring explicit code changes for device placement in standard scenarios. The script simulates training for a few epochs on dummy data and reports the device used (GPU or CPU) and the training time, illustrating how deep learning frameworks seamlessly leverage GPU hardware to drastically reduce the substantial training times required for complex models applied to large cosmological simulation datasets. The training history plot shows the decrease in loss over epochs.
+**17.8.6 Extragalactic: Outline of Data Management Plan (DMP) Components**
+Writing proposals for large telescopes like HST or JWST, or for survey participation, typically requires a Data Management Plan (DMP) outlining how data will be handled, processed, archived, and shared (Section 17.7.2). This conceptual example lists the key sections and considerations for a DMP related to an extragalactic imaging proposal.
 
-**11.7.8 Multi-messenger: VOEvent Brokers in Alert Follow-up Coordination**
+```markdown
+# Outline: Data Management Plan (DMP) - Extragalactic Imaging Proposal (e.g., HST)
+
+**1. Data Description:**
+    *   **Data Types:** Raw images (e.g., HST/WFC3 `_raw.fits`), calibrated images (`_flt.fits`, `_drz.fits`), associated calibration files (darks, flats, biases - if applicable), derived data products (source catalogs, morphology measurements, surface brightness profiles).
+    *   **Data Formats:** Primarily FITS (Multi-Extension FITS - MEF), potentially ASCII or ECSV for derived catalogs. Metadata adhering to FITS and WCS standards, potentially VO UCDs for catalogs.
+    *   **Volume Estimate:** Estimated total data volume (raw, processed, derived) in GB/TB based on number of exposures, detector size, processing overheads.
+    *   **Data Generation:** Source of data (e.g., HST Proposal ID XXXX, PI Name), instruments (WFC3/UVIS, WFC3/IR), filters, observation dates/schedule.
+
+**2. Metadata:**
+    *   **Standards:** Adherence to HST FITS standard, WCS standard (including SIP/distortion model keywords), potentially adding IVOA UCDs to derived catalog columns.
+    *   **Capture:** Primarily automated capture by HST systems into FITS headers. Pipeline processing will add HISTORY keywords documenting steps. Derived products will have headers describing content and creation process.
+    *   **Quality:** Rely on MAST pipeline metadata quality control. Additional quality flags may be added to derived catalogs based on analysis (e.g., S/N, fit quality).
+
+**3. Data Storage & Preservation:**
+    *   **During Project:** Secure storage on institutional servers/clusters with regular backups. Version control (Git/GitHub) for code and configuration files.
+    *   **Long-Term Archive:** Raw and calibrated standard pipeline products (`_raw`, `_flt`, `_drz`) will be permanently archived at MAST (Mikulski Archive for Space Telescopes) by STScI policies.
+    *   **Derived Data Preservation:** Derived high-level science products (catalogs, final mosaics, key measurement tables) will be deposited in a public repository ensuring long-term access and receiving a DOI (e.g., Zenodo, VizieR via CDS, institutional repository). Target deposition within X months of publication. Documentation and code required to understand/use derived data will be included/linked.
+
+**4. Data Access & Sharing:**
+    *   **Access Policies:** Raw/calibrated data access follows standard STScI policies (typically ~6-12 month proprietary period after observation, then public access via MAST).
+    *   **Data Sharing Plan:** Derived data products and associated analysis code will be made publicly available upon publication of related research papers via the chosen repository (e.g., Zenodo link, VizieR submission).
+    *   **Access Methods:** Data access via MAST portal and VO services (TAP, SIA). Derived data via repository DOI/link. Code via public GitHub repository.
+
+**5. Roles & Responsibilities:**
+    *   **PI (Principal Investigator):** Overall responsibility for DMP implementation and data quality.
+    *   **Co-I / Postdoc (Data Processing Lead):** Responsible for executing processing pipeline, generating derived products, ensuring metadata accuracy, performing depositions.
+    *   **Co-I (Collaboration Lead):** Responsible for internal data sharing and coordination among team members.
+    *   **Institutional IT / Archive Staff:** Responsible for infrastructure, backups, long-term preservation of deposited data.
+
+**6. Budget/Resources:**
+    *   Estimate personnel time for data processing, analysis, documentation, and deposition.
+    *   Identify costs associated with data storage (local/cloud) during project.
+    *   Note reliance on publicly funded archives (MAST) for long-term preservation (usually no direct cost to project for standard products).
+
+**7. Ethics and Intellectual Property:**
+    *   **Licensing:** Specify open source license for code (e.g., MIT, BSD) and data license for derived products (e.g., Creative Commons CC-BY).
+    *   **Privacy:** Not applicable for typical astronomical imaging data.
+    *   **Attribution:** Ensure proper citation of data sources, software, and contributors.
+
+```
+**Explanation:** This markdown outline lists the typical sections required in a Data Management Plan (DMP) for an astronomical research project, using an extragalactic HST imaging proposal as context (Section 17.7.2). It covers essential points like describing the types and formats of data to be generated, the metadata standards to be used, plans for short-term storage and long-term preservation (including deposition in public archives like MAST and repositories like Zenodo/VizieR), policies for data access and sharing (including timelines and DOIs), defined roles for data management responsibilities within the research team, and considerations for resources and licensing. Creating such a plan forces researchers to consider the full data lifecycle from the outset, promoting good data stewardship, facilitating collaboration, and ensuring compliance with funding agency and publisher requirements for data sharing and reproducibility.
+
+**17.8.7 Cosmology: Simulation Data Access Management**
+Large cosmological simulation projects (e.g., IllustrisTNG, EAGLE, CAMELS) generate petabytes of data (particle snapshots, halo catalogs, merger trees) used by hundreds of researchers worldwide (Nelson et al., 2019; Schaye et al., 2015; Villaescusa-Navarro et al., 2021). Managing access to this data requires sophisticated infrastructure and policies. This conceptual description outlines typical data access management strategies used by such large simulation collaborations.
+
+```markdown
+# Conceptual Description: Data Access Management in Large Simulation Collaborations
+
+Large cosmological simulation projects face significant challenges in providing efficient, equitable, and sustainable access to their massive datasets for a broad scientific community. Common strategies include:
+
+1.  **Centralized Data Portals & Databases:**
+    *   **Web Portal:** A primary web interface providing documentation, visualization tools (e.g., slice viewers, halo explorers), links to publications, and mechanisms for data discovery and download. (e.g., TNG Hub, EAGLE database).
+    *   **Relational Databases:** Storing derived data products like halo catalogs, merger trees, and galaxy properties in relational databases (SQL-based) accessible via the web portal or potentially direct database connections or TAP services (Section 10.2). This allows users to perform complex queries on catalog data without downloading entire large files.
+    *   **File Servers:** Storing large raw snapshot data or group catalogs on high-performance file servers accessible via standard protocols (HTTP/FTP, Globus - Section 17.5.2).
+
+2.  **Data Access Tiers & Formats:**
+    *   **Raw Snapshot Data:** Full particle/cell data, often in specialized formats (Gadget HDF5, Arepo HDF5). Due to immense size (TBs per snapshot), access might be restricted, require specific user agreements, or necessitate analysis on computing resources located near the data storage. Data transfer via Globus is common.
+    *   **Derived Catalogs:** More commonly used are processed data products like halo/subhalo catalogs (listing properties like mass, position, velocity, radius) and galaxy catalogs (stellar mass, SFR, metallicity, morphology proxies linked to halos). These are significantly smaller and often provided in more accessible formats (FITS binary tables, HDF5, sometimes ASCII) or via databases.
+    *   **Merger Trees:** Trace the formation history of halos and galaxies through cosmic time, typically stored in specialized formats or databases.
+    *   **Value-Added Catalogs:** Catalogs generated by the community based on the primary simulation outputs (e.g., mock observations, specific physical property measurements).
+
+3.  **Access Mechanisms & APIs:**
+    *   **Direct Download:** Users download specific files (snapshots, catalogs) via HTTP/FTP or Globus.
+    *   **Database Queries:** Users submit SQL or ADQL queries via web forms or TAP clients (`pyvo`, `astroquery`) to retrieve specific subsets of catalog data.
+    *   **Python APIs/Client Libraries:** Collaborations often develop dedicated Python packages (e.g., `illustris_python`) that provide functions to easily search for, load, and manipulate specific types of simulation data (snapshots, catalogs, merger trees), hiding the complexities of file structures or database queries from the end-user. These clients are crucial for usability and reproducibility.
+    *   **JupyterHub/Lab Instances:** Some projects provide web-based Jupyter environments hosted close to the data storage, allowing users to perform analysis remotely without downloading massive datasets locally.
+
+4.  **Access Policies & Documentation:**
+    *   **Data Release Papers:** Detailed papers describing the simulation suite, data products, data model, known limitations, and access methods.
+    *   **Usage Policies:** Clear guidelines on data usage, acknowledgments required in publications, potential restrictions on redistribution, and user registration requirements.
+    *   **Extensive Documentation:** Tutorials, examples, API documentation for client libraries, data format descriptions.
+
+5.  **Infrastructure:**
+    *   Requires significant storage capacity (petabytes).
+    *   High-bandwidth network connections for data transfer.
+    *   Database servers capable of handling complex queries on large tables.
+    *   Web servers and potentially computing resources for data processing and remote analysis environments (JupyterHubs).
+    *   Long-term preservation strategy (often relying on institutional HPC/data center support).
+
+Managing access effectively involves balancing ease of use for the scientific community with the significant infrastructural demands of storing and serving petabyte-scale simulation data, while ensuring proper attribution and documenting data provenance. Client libraries and database access are key components for enabling large-scale collaborative science with these foundational datasets.
+```
+**Explanation:** This markdown block provides a conceptual overview of the data access management strategies typically employed by large cosmological simulation collaborations (Section 17.7). It highlights the multi-faceted approach required, involving centralized web portals for documentation and discovery, relational databases for efficient querying of large catalogs (haloes, galaxies), high-performance file servers for storing raw snapshot data, and specialized Python client libraries (`illustris_python` as an example) that provide a user-friendly API for accessing different data products. It emphasizes the distinction between accessing massive raw data (often requiring proximity to storage or high-performance transfer tools like Globus) and more accessible derived catalogs. The importance of clear documentation, data release papers, usage policies, and potentially remote analysis platforms (like JupyterHubs) in facilitating widespread, collaborative use of these complex and valuable datasets by the research community is underscored. This illustrates the sophisticated infrastructure needed to manage and disseminate petabyte-scale scientific simulation data effectively.
+
+**17.8.8 Multi-messenger: VOEvent Brokers in Alert Follow-up Coordination**
 Multi-messenger astronomy (MMA) relies on rapid communication and coordination between different observatories following the detection of a transient event (e.g., GW signal, neutrino event, GRB) by one facility. VOEvent provides a standardized XML format for distributing alerts, while event brokers act as central hubs to receive, filter, annotate, and redistribute these alerts to subscribers (astronomers, robotic telescopes) (Section 17.5.1, Section 8.4). This example conceptually describes the workflow involving brokers.
 
 ```markdown
@@ -728,7 +854,7 @@ Multi-messenger astronomy (MMA) relies on rapid communication and coordination b
 **Role of Infrastructure:**
 *   **VOEvent:** Provides the standard format for interoperable alert communication.
 *   **GCN:** The primary, low-latency distribution network.
-*   **Brokers (Kafka-based often):** Provide the scalable infrastructure for ingesting high-rate streams, filtering, enriching alerts with ML/catalog lookups, and managing subscriptions.
+*   **Brokers (Kafka-based often):** Provide the scalable infrastructure for ingesting high-rate streams, filtering, enriching alerts with ML/catalog lookups, and managing subscriptions (Section 17.5.3).
 *   **Databases/APIs:** Underpin broker functionality and allow programmatic access to alert information.
 *   **Telescope Networks/Schedulers:** Enable rapid, coordinated response.
 
@@ -740,57 +866,57 @@ This workflow highlights how standardized protocols (VOEvent), real-time communi
 
 **References**
 
-Ackley, K., Adya, V. B., Agrawal, P., et al. (2020). Neutron Star Extreme Matter Observatory: A kilohertz-range gravitational-wave detector. *Publications of the Astronomical Society of Australia, 37*, e047. https://doi.org/10.1017/pasa.2020.39 *(Example context for GW follow-up)*
-*   *Summary:* While proposing a future detector, this paper discusses the science enabled by detecting kilonovae, the electromagnetic counterparts to neutron star mergers detected via gravitational waves, highlighting the need for rapid multi-messenger follow-up coordination (Section 17.5.1, Example 17.8.8).
+Ackley, K., Adya, V. B., Agrawal, P., et al. (2020). Neutron Star Extreme Matter Observatory: A kilohertz-range gravitational-wave detector. *Publications of the Astronomical Society of Australia, 37*, e047. https://doi.org/10.1017/pasa.2020.39
+*   *Summary:* Discusses science drivers for future GW detectors, including kilonova detection, which relies heavily on the rapid multi-messenger alert and follow-up infrastructure described conceptually (Sections 17.5.1, 17.8.8).
 
 Allen, A., Teuben, P., Paddy, K., Greenfield, P., Droettboom, M., Conseil, S., Ninan, J. P., Tollerud, E., Norman, H., Deil, C., Bray, E., Sipőcz, B., Robitaille, T., Kulumani, S., Barentsen, G., Craig, M., Pascual, S., Perren, G., Lian Lim, P., … Streicher, O. (2022). Astropy: A community Python package for astronomy. *Zenodo*. [Data set]. https://doi.org/10.5281/zenodo.6514771
-*   *Summary:* This Zenodo record archives Astropy. While primarily a core library, its ecosystem and development model exemplify collaborative software practices (Section 17.1), and its tools interact with VO infrastructure (Section 17.6) and data archives (Section 17.7).
+*   *Summary:* Archives Astropy. The project embodies open, collaborative software development (Section 17.1). Its tools interface with data archives and VO services, supporting collaborative data access and management (Sections 17.6, 17.7).
 
-Astropy Project. (n.d.). *montage-wrapper*. Retrieved from https://github.com/astropy/montage-wrapper *(Note: Software repository)*
-*   *Summary:* GitHub repository for `montage-wrapper`. Provides a Python interface to the Montage mosaicking toolkit, relevant to large-scale data processing which often involves collaborative infrastructure (related to Section 17.4).
+Astropy Project. (n.d.). *montage-wrapper*. Retrieved from https://github.com/astropy/montage-wrapper
+*   *Summary:* GitHub repository for `montage-wrapper`. This tool interfaces with Montage, relevant for large mosaic creation, a task often requiring distributed processing and shared data access infrastructure (Section 17.4).
 
 Bacchelli, A., & Bird, C. (2013). Expectations, outcomes, and challenges of modern code review. *Proceedings of the 2013 International Conference on Software Engineering*, 712–721. https://doi.org/10.1109/ICSE.2013.6606628 *(Note: Pre-2020, foundational code review study)*
-*   *Summary:* Although pre-2020 and from software engineering, this highly cited paper provides empirical insights into the benefits and challenges of code review practices, directly relevant to the discussion in Section 17.1.2.
+*   *Summary:* Seminal software engineering paper empirically studying code review, providing evidence for the benefits and identifying challenges relevant to effective collaborative code review practices (Section 17.1.2).
 
 Bailey, S., Abareshi, B., Abidi, A., Abolfathi, B., Aerts, J., Aguilera-Gomez, C., Ahlen, S., Alam, S., Alexander, D. M., Alfarsy, R., Allen, L., Prieto, C. A., Alves-Oliveira, N., Anand, A., Armengaud, E., Ata, M., Avilés, A., Avon, M., Brooks, D., … Zou, H. (2023). The Data Release 1 of the Dark Energy Spectroscopic Instrument. *The Astrophysical Journal, 960*(1), 75. https://doi.org/10.3847/1538-4357/acff2f
-*   *Summary:* Describes the DESI survey DR1. Large collaborations like DESI rely heavily on shared infrastructure for data processing, management (Section 17.7), and internal/external data access (Sections 17.4, 17.6).
+*   *Summary:* Describes the DESI survey DR1. Large collaborations like DESI require robust data management infrastructure (Section 17.7) and often utilize distributed computing for processing and analysis (Section 17.4).
 
 Blanco-Cuaresma, S. (2023). Towards FAIR software: the hansok template for sustainable research software in astrophysics. *Astronomy and Computing, 44*, 100730. https://doi.org/10.1016/j.ascom.2023.100730
-*   *Summary:* Presents a template and guidelines for developing sustainable and FAIR (Findable, Accessible, Interoperable, Reusable) research software in astrophysics, directly addressing best practices for collaborative and reproducible code development (Sections 17.1, 17.2, 17.7).
-
-Bock, J., Cooray, A., Hanany, S., et al. (2020). Probe of Inflation and Cosmic Origins (PICO): A Probe-class mission concept study. *arXiv preprint arXiv:1902.10541*. *(Note: Mission concept paper, reflects future needs)*
-*   *Summary:* Describes the PICO mission concept study for CMB polarization. Planning for future large missions necessitates considering collaborative structures, data management plans (Section 17.7.2), and processing infrastructure needs.
+*   *Summary:* Presents a template promoting FAIR principles for astronomical software. Directly addresses best practices for collaborative development, documentation, testing (CI), and sharing (Sections 17.1, 17.2, 17.7).
 
 Coughlin, M. W., Antier, S., Bhalerao, V. B., et al. (2020). GROWTH on S190814bv: Deep Synoptic Limits on the Optical/Near-infrared Counterpart to a Neutron Star–Black Hole Merger. *The Astrophysical Journal Letters, 896*(2), L32. https://doi.org/10.3847/2041-8213/ab962d
-*   *Summary:* Reports on the follow-up of a GW event (NSBH merger). This exemplifies the multi-facility coordination challenges and reliance on alert systems/brokers discussed in Section 17.5.1 and Example 17.8.8.
+*   *Summary:* Describes the follow-up effort for a specific GW event. Showcases the real-world application of multi-messenger coordination involving alert systems and distributed telescope networks (Section 17.5.1, Example 17.8.8).
 
 Dalton, G., Trager, S., Abrams, D. C., Bonifacio, P., Aguerri, J. A. L., Alpaslan, M., Balcells, M., Barker, R., Battaglia, G., Bellido-Tirado, O., Benson, A., Best, P., Bland-Hawthorn, J., Bridges, T., Brinkmann, J., Brusa, M., Cabral, J., Caffau, E., Carter, D., … Zurita, C. (2022). 4MOST: Project overview and information for the First Call for Proposals. *The Messenger, 186*, 3–11. https://doi.org/10.18727/0722-6691/5267
-*   *Summary:* Describes the 4MOST multi-object spectrograph facility. Large instrument consortia require significant collaborative infrastructure for operations, data pipelines, and data management (Sections 17.4, 17.7).
+*   *Summary:* Describes the 4MOST facility. Planning, building, and operating such large instruments requires extensive collaboration, shared software infrastructure, and data management systems (Sections 17.1, 17.4, 17.7).
 
 Demleitner, M., Taylor, M., Dowler, P., Major, B., Normand, J., Benson, K., & pylibs Development Team. (2023). pyvo 1.4.1: Fix error in datalink parsing. *Zenodo*. [Data set]. https://doi.org/10.5281/zenodo.7858974
-*   *Summary:* Zenodo archive for `pyvo`. This library is the key Python implementation for interacting with VO protocols like TAP, SIA, SSA, and DataLink, fundamental to the VO as a collaborative infrastructure (Section 17.6, Example 17.8.5).
+*   *Summary:* Archives `pyvo`. This library is the primary Python tool for interacting with the VO infrastructure (TAP, SIA, SSA, DataLink), enabling reproducible and collaborative data access (Sections 17.6, 17.8.5).
 
 Dowler, P., Demleitner, M., Taylor, M., & Benson, K. (2022). IVOA Recommendation: VOTable Format Definition Version 1.5. *International Virtual Observatory Alliance*. https://www.ivoa.net/documents/VOTable/20221020/REC-VOTable-1.5-20221020.pdf
-*   *Summary:* The official standard for VOTable format. VOTable is a key IVOA standard ensuring interoperability and enabling collaborative data exchange via VO services (Section 17.6.4).
+*   *Summary:* The VOTable standard definition. VOTable facilitates interoperable data exchange within the VO framework, supporting collaborative analysis (Section 17.6.4).
 
 Förster, F., Cabrera-Vives, G., Castillo-Navarrete, E., Estévez, P. A., Eyheramendy, S., Arroyo-Gómez, F., Bauer, F. E., Bogomilov, M., Bufano, F., Catelan, M., D’Abrusco, R., Djorgovski, S. G., Elorrieta, F., Galbany, L., García-Álvarez, D., Graham, M. J., Huijse, P., Marín, F., Medina, J., … San Martín, J. (2021). The Automatic Learning for the Rapid Classification of Events (ALeRCE) broker. *The Astronomical Journal, 161*(5), 242. https://doi.org/10.3847/1538-3881/abf483
-*   *Summary:* Describes the ALeRCE event broker, which processes ZTF alert streams using ML. Exemplifies the infrastructure and techniques used in modern transient alert processing and distribution (Sections 17.5, 17.8.8).
+*   *Summary:* Describes the ALeRCE alert broker. Exemplifies the critical role of brokers using automated processing (ML, database queries) and scalable infrastructure (Kafka) for handling real-time data streams in MMA and time-domain surveys (Sections 17.5.3, 17.8.8).
 
-GitHub Docs. (n.d.). *GitHub Actions documentation*. Retrieved from https://docs.github.com/en/actions *(Note: Software documentation)*
-*   *Summary:* Official documentation for GitHub Actions. This platform provides the CI/CD capabilities discussed in Section 17.2 and demonstrated in Example 17.8.1, crucial for automated testing and workflows in collaborative software development.
+GitHub Docs. (n.d.). *GitHub Actions documentation*. Retrieved from https://docs.github.com/en/actions
+*   *Summary:* Official documentation for GitHub Actions. This CI/CD platform is crucial for automating testing and workflows in collaborative software development hosted on GitHub (Section 17.2, Example 17.8.1).
 
-Globus. (n.d.). *Globus: Research data management simplified*. Retrieved from https://www.globus.org/ *(Note: Software/Service website)*
-*   *Summary:* Official website for Globus. Globus provides the high-performance, reliable data transfer service widely used by research institutions and HPC centers mentioned in Section 17.5.2.
+Globus. (n.d.). *Globus: Research data management simplified*. Retrieved from https://www.globus.org/
+*   *Summary:* Official website for Globus. Provides essential high-performance data transfer services widely used for moving large astronomical datasets between institutions and facilities (Section 17.5.2).
 
 Leprovost, N., & Schmitt, C. (2022). Promoting reproducibility in computational astrophysics with Containers. *arXiv preprint arXiv:2210.03785*. https://doi.org/10.48550/arXiv.2210.03785
-*   *Summary:* This paper specifically advocates for and discusses the use of containerization technologies (Docker, Singularity/Apptainer) to enhance reproducibility in computational astrophysics, directly supporting Section 17.3.
+*   *Summary:* Advocates for using containerization (Docker, Apptainer/Singularity) to ensure reproducible computational environments in astrophysics, directly relevant to Section 17.3 and collaborative work.
 
 Muna, D., Blanco-Cuaresma, S., Ponder, K., Pasham, D., Teuben, P., Williams, P., A.-P., Lim, P. L., Shupe, D., Tollerud, E., Hedges, C., Robitaille, T., D'Eugenio, F., & Astropy Collaboration. (2023). Software Citation in Astronomy: Current Practices and Recommendations from the Astropy Project. *arXiv preprint arXiv:2306.06699*. https://doi.org/10.48550/arXiv.2306.06699
-*   *Summary:* Discusses best practices for software citation, including the use of DOIs and ASCL IDs. Directly relevant to persistent identifiers for software discussed in Section 17.7.5 as part of data/code stewardship.
+*   *Summary:* Discusses software citation practices, including DOIs and ASCL IDs. Relevant to ensuring proper credit and traceability in collaborative software development and data management (Section 17.7.5).
 
-Sylabs Inc. (n.d.). *Apptainer User Guide*. Retrieved from https://apptainer.org/docs/user/main/ *(Note: Software documentation)*
-*   *Summary:* Official user guide for Apptainer (formerly Singularity). Apptainer is the containerization tool highlighted in Section 17.3.2 as being particularly suitable and widely adopted for HPC and scientific computing environments due to its security model and features.
+Sylabs Inc. (n.d.). *Apptainer User Guide*. Retrieved from https://apptainer.org/docs/user/main/
+*   *Summary:* Official documentation for Apptainer (Singularity). This containerization tool is widely used in HPC and scientific computing for creating reproducible environments (Section 17.3.2).
+
+Villaescusa-Navarro, F., Angles-Alcazar, D., Genel, S., Nagai, D., Nelson, D., Pillepich, A., Hernquist, L., Marinacci, F., Pakmor, R., Springel, V., Vogelsberger, M., ZuHone, J., & Weinberger, R. (2023). Splashdown: Representing cosmological simulations through neural networks. *The Astrophysical Journal Supplement Series, 266*(2), 38. https://doi.org/10.3847/1538-4365/accc3e
+*   *Summary:* Explores using neural networks to represent large simulation outputs. Managing and accessing the original simulation data relies on the type of data administration infrastructure discussed in Section 17.7 and Example 17.8.7.
 
 Zhao, Y., Zhou, Y., Zimmermann, T., & Huo, M. (2023). A Comprehensive Comparison Study of CI/CD Methodologies. *IEEE Transactions on Software Engineering*, 1–1. https://doi.org/10.1109/TSE.2023.3313447
-*   *Summary:* Provides a recent comparative study of CI/CD methodologies from a software engineering perspective. Offers background and context for the principles and benefits of CI/CD discussed in Section 17.2.
+*   *Summary:* Provides a recent software engineering perspective on comparing different CI/CD approaches, relevant to the principles and benefits discussed in Section 17.2.
 
