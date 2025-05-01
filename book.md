@@ -3,8 +3,8 @@
 
 # Astrocomputing: From Raw Data to Scientific Discovery
 ## *A Practical Guide to Processing, Analyzing, and Interpreting Astronomical Data with Python*
-### *LUCIANO SILVA* (luciano.silva.sp@gmail.com)
-
+### *LUCIANO SILVA*
+#### luciano.silva.sp@gmail.com
 
 ---
 
