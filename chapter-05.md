@@ -157,7 +157,7 @@ The core goal of photometric calibration is to establish the quantitative relati
     The color of the target might be estimated from its $(B-V)\_{instr}$ measurement and the color terms for B and V, or assumed to be zero for a first approximation if only one filter is used (introducing a small color-dependent error).
 
     For converting to physical flux units (AB system), the process is analogous but works directly with flux densities. The zero point $ZP_{AB}$ can be directly related to $ZP_{Vega}$ and the filter properties, or determined by relating the instrumental count rate $Rate_{instr}$ to the known AB magnitude $m_{AB, std}$ of standards:
-    $m_{AB, std} = -2.5 \log_{10}(Rate_{instr}) + ZP'_{AB} + CT'_{AB} \times (color)_{std} + k' \times X$
+    $m_{AB, std} = -2.5 \log_{10}(Rate_{instr}) + ZP'\_{AB} + CT'\_{AB} \times (color)\_{std} + k' \times X$
     where $ZP'_{AB}$ is the AB zero point, and color/extinction terms might be slightly different if defined relative to AB magnitudes. Alternatively, one can calibrate to Vega magnitudes first and then convert to AB magnitudes using established filter-dependent transformations (Blanton & Roweis, 2007).
 
 *   **5.4.3 Aperture Corrections**
