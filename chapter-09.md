@@ -28,7 +28,7 @@ The approach to registration depends on whether accurate WCS information is avai
     *   **Process:**
         1.  Detect sources independently in both the source and reference images (Section 6.2).
         2.  Cross-match the detected source lists based on their *pixel coordinate patterns*, typically using algorithms robust against translation, rotation, and scale differences (e.g., triangle matching algorithms). Libraries like **`astroalign`** (Beroiz et al., 2020) implement such feature-based matching routines.
-        3.  Once a set of reliably matched source pairs ($(p_{x,src}, p_{y,src})_i \leftrightarrow (p_{x,ref}, p_{y,ref})_i$) is identified, a geometric transformation model (e.g., affine transformation including translation, rotation, scale, shear; or a polynomial transformation for non-linear effects) is fitted to map the source pixel coordinates to the reference pixel coordinates using least squares.
+        3.  Once a set of reliably matched source pairs ($(p_{x,src}, p_{y,src})\_i \leftrightarrow (p_{x,ref}, p_{y,ref})_i$) is identified, a geometric transformation model (e.g., affine transformation including translation, rotation, scale, shear; or a polynomial transformation for non-linear effects) is fitted to map the source pixel coordinates to the reference pixel coordinates using least squares.
         4.  Apply the fitted geometric transformation (including interpolation) to the source image data to align it with the reference image pixel grid.
     *   **Advantages:** Does not require prior WCS information. Can work even if images have significantly different orientations or scales (within limits).
     *   **Disadvantages:** Requires a sufficient number of well-distributed common features (stars) in both images. Accuracy depends on the precision of source detection/centroiding and the number/distribution of matched features. May struggle with images having very few stars or significantly different fields of view. Fitting only simple transformations (like affine) may not capture complex instrumental distortions accurately.
@@ -42,7 +42,7 @@ Combining multiple, aligned images of the same sky region is a fundamental techn
 The core principle involves calculating a statistically robust average pixel value at each position $(x, y)$ in the final combined image grid, based on the corresponding pixel values from the stack of $N$ input images ($I_i(x, y)$ for $i=1...N$) that have already been registered and aligned (Section 9.1). Several combination algorithms are commonly used:
 
 1.  **Mean (Average) Combination:** The simplest method is to calculate the arithmetic mean of the pixel values across the stack:
-    $\bar{I}_{mean}(x, y) = \frac{1}{N} \sum_{i=1}^{N} I_i(x, y)$
+    $\bar{I}\_{mean}(x, y) = \frac{1}{N} \sum_{i=1}^{N} I_i(x, y)$
     *   **SNR Improvement:** If the noise ($\sigma_{single}$) in each input image is random and uncorrelated, the noise in the mean-combined image is reduced by a factor of $\sqrt{N}$: $\sigma_{mean} = \sigma_{single} / \sqrt{N}$. This leads to a $\sqrt{N}$ improvement in SNR for background-limited faint sources.
     *   **Disadvantages:** The mean is highly sensitive to outlier pixel values. A single cosmic ray hit or unmasked bad pixel in one input frame can significantly contaminate the corresponding pixel in the final average image. Therefore, simple mean combination is rarely used without prior or simultaneous outlier rejection.
 
@@ -57,7 +57,7 @@ The core principle involves calculating a statistically robust average pixel val
     *   **Disadvantages:** Performance depends critically on the choice of sigma threshold and the underlying noise distribution. Can erroneously clip pixels belonging to faint real sources or the cores of bright stars if the noise model or threshold is incorrect. Requires careful tuning.
 
 4.  **Weighted Mean Combination:** If the input images have different exposure times or varying quality (e.g., different background noise levels or seeing conditions), a weighted mean combination can produce a higher SNR result than a simple mean or median. Each image $I_i$ is assigned a weight $w_i$ (typically inversely proportional to its variance, $w_i \propto 1/\sigma_i^2$). The combined image is:
-    $\bar{I}_{weighted}(x, y) = \frac{\sum_{i=1}^{N} w_i I_i(x, y)}{\sum_{i=1}^{N} w_i}$
+    $\bar{I}\_{weighted}(x, y) = \frac{\sum_{i=1}^{N} w_i I_i(x, y)}{\sum_{i=1}^{N} w_i}$
     Calculating appropriate weights requires accurate estimates of the variance (noise) in each input image, potentially including contributions from background noise, read noise, and Poisson noise from sources. Combining weighting with outlier rejection (e.g., sigma-clipped weighted mean) is often employed in sophisticated pipelines.
 
 **Implementation (`ccdproc.Combiner`):** The **`ccdproc.Combiner`** class (introduced in Chapter 3 for calibration frames) is also ideally suited for combining science images. It takes a list of aligned `CCDData` objects as input. Users can configure various options:
