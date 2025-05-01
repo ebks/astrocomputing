@@ -13,6 +13,8 @@
 
 ---
 
+![imagem](imagem.png)
+
 **The Computational Revolution in Astronomy**
 
 Astronomy, perhaps the oldest of the observational sciences, stands today at the vanguard of a profound methodological revolution, one driven by the relentless advance of computational power and the concomitant deluge of digital data. Where once the astronomer's primary tools were the telescope eyepiece and the logbook, the modern practitioner navigates a complex ecosystem of sophisticated instrumentation generating terabytes of data, intricate theoretical models requiring supercomputer simulations, and advanced algorithms essential for extracting subtle signals from noise. Computation has transcended its historical role as a mere facilitator of calculation to become a fundamental pillar of astrophysical discovery, standing co-equal with observation and theory. From the automated control of robotic telescopes and the initial processing of raw detector signals to the execution of vast cosmological simulations tracing the universe's evolution, the analysis of petabyte-scale survey catalogs, the application of machine learning to classify celestial objects or detect rare events, and the development of complex models to interpret multi-wavelength and multi-messenger observations, computation is inextricably woven into the fabric of contemporary astrophysical research.
