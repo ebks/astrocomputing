@@ -58,8 +58,7 @@ Choosing the best model parameters $\hat{\theta}$ and assessing their uncertaint
 
 *   **12.2.4 Bayesian Inference Fundamentals**
     Bayesian inference provides a fundamentally different approach by treating model parameters $\theta$ themselves as random variables described by probability distributions. It combines prior knowledge about the parameters with information from the data (via the likelihood function) to obtain the **posterior probability distribution (PDF)** of the parameters, $P(\theta | D, M)$, using Bayes' Theorem:
-    $P(\theta | D, M) = \frac{P(D | \theta, M) \times P(\theta | M)}{P(D | M)}$
-    In words: **Posterior $\propto$ Likelihood $\times$ Prior**
+    $P(\theta | D, M) = \frac{P(D | \theta, M) \times P(\theta | M)}{P(D | M)}$ or, in words: **Posterior $\propto$ Likelihood $\times$ Prior**. 
     *   **Likelihood ($P(D | \theta, M)$):** Same as in MLE, representing the probability of the data given specific parameter values. For Gaussian errors, $\mathcal{L}(\theta) \propto \exp(-\chi^2(\theta)/2)$.
     *   **Prior ($P(\theta | M)$):** Represents our state of knowledge or belief about the parameter values *before* considering the data. Priors can be "uninformative" (e.g., uniform over a wide range) or "informative" (e.g., based on previous experiments, physical constraints, or theoretical expectations). The choice of prior can influence the posterior, especially when data are not very constraining.
     *   **Posterior ($P(\theta | D, M)$):** The result of the Bayesian analysis. It represents the full probability distribution of the model parameters *after* incorporating the information from the data. It encapsulates all information about the parameters and their uncertainties. Parameter estimates are typically derived from the posterior PDF (e.g., mean, median, or mode), and uncertainties are represented by credible intervals (e.g., the range containing 68% or 95% of the posterior probability).
