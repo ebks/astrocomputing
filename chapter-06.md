@@ -1,5 +1,3 @@
-Okay, here is the corrected Chapter 6, with the instructional paragraphs removed from Section 6.7, leaving only the proper introductory and concluding paragraphs around the code examples, while maintaining all other requirements.
-
 ---
 # Chapter 6
 # Image Analysis: Source Detection and Measurement
