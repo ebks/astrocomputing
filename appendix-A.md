@@ -2,8 +2,9 @@
 # Appendix A
 # Installation of Python and Essential Libraries
 ---
+![imagem](imagem.png)
 
-This appendix provides practical guidance for setting up the necessary Python computational environment required to execute the examples and follow the workflows presented throughout this book. Establishing a consistent and reproducible software environment is a foundational step for computational research. We strongly recommend using the Anaconda or Miniconda distribution, as it simplifies the management of Python itself and the numerous scientific libraries (many with complex non-Python dependencies) used extensively in modern astrophysics. This guide focuses on installing Miniconda (a minimal installer for Conda) and creating a dedicated environment containing the core packages needed for astrocomputing.
+*This appendix provides practical guidance for setting up the necessary Python computational environment required to execute the examples and follow the workflows presented throughout this book. Establishing a consistent and reproducible software environment is a foundational step for computational research. We strongly recommend using the Anaconda or Miniconda distribution, as it simplifies the management of Python itself and the numerous scientific libraries (many with complex non-Python dependencies) used extensively in modern astrophysics. This guide focuses on installing Miniconda (a minimal installer for Conda) and creating a dedicated environment containing the core packages needed for astrocomputing.*
 
 ---
 
