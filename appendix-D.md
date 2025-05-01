@@ -2,8 +2,9 @@
 # Appendix D
 # Units and Coordinates with Astropy (`astropy.units`, `astropy.coordinates`)
 ---
+![imagem](imagem.png)
 
-This appendix provides a more detailed exploration of two fundamental and powerful sub-packages within the Astropy library: `astropy.units` for handling physical units and `astropy.coordinates` for representing and transforming astronomical coordinate systems. Proficient use of these tools is essential for writing clear, robust, dimensionally consistent, and scientifically accurate astronomical analysis code in Python. They help prevent common errors related to unit conversions and coordinate transformations, making code more reliable and easier to interpret.
+*This appendix provides a more detailed exploration of two fundamental and powerful sub-packages within the Astropy library: `astropy.units` for handling physical units and `astropy.coordinates` for representing and transforming astronomical coordinate systems. Proficient use of these tools is essential for writing clear, robust, dimensionally consistent, and scientifically accurate astronomical analysis code in Python. They help prevent common errors related to unit conversions and coordinate transformations, making code more reliable and easier to interpret.*
 
 ---
 
