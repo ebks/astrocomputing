@@ -8,12 +8,14 @@
 
 ---
 
+![imagem](imagem.png)
+
 *Copyright © 2025 by Luciano Silva*
 *All rights reserved.*
 
 ---
 
-![imagem](imagem.png)
+
 
 **The Computational Revolution in Astronomy**
 
