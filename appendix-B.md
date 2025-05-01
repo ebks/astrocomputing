@@ -2,8 +2,9 @@
 # Appendix B
 # Quick Reference for Key Libraries
 ---
+![imagem](imagem.png)
 
-This appendix provides a concise quick reference (or "cheatsheet") for frequently used functions, modules, and concepts within the core Python libraries essential for astrocomputing, as discussed throughout this book. It is not exhaustive but aims to serve as a rapid reminder of common syntax and functionality for libraries like NumPy, SciPy, Matplotlib, Astropy (including its key sub-packages like `io.fits`, `table`, `units`, `coordinates`, `wcs`, `modeling`, `visualization`), Photutils, Specutils, Lightkurve, and Astroquery. Users are encouraged to consult the detailed official documentation for each library for comprehensive information, advanced features, and specific options.
+*This appendix provides a concise quick reference (or "cheatsheet") for frequently used functions, modules, and concepts within the core Python libraries essential for astrocomputing, as discussed throughout this book. It is not exhaustive but aims to serve as a rapid reminder of common syntax and functionality for libraries like NumPy, SciPy, Matplotlib, Astropy (including its key sub-packages like `io.fits`, `table`, `units`, `coordinates`, `wcs`, `modeling`, `visualization`), Photutils, Specutils, Lightkurve, and Astroquery. Users are encouraged to consult the detailed official documentation for each library for comprehensive information, advanced features, and specific options.*
 
 ---
 
