@@ -263,15 +263,6 @@ Following the main chapters, several appendices provide useful reference materia
 *   **[Appendix E: Glossary of Astrocomputing Terminology](appendix-E.md)**
     Provides definitions for key terms and acronyms spanning astrophysics, data processing, statistics, machine learning, and HPC encountered in the book. Serves as an alphabetical reference guide to the specialized language of astrocomputing.
 
-**Accompanying Software/Code Repository**
-
-This book is designed to be a practical guide, and understanding is best solidified through hands-on application. To facilitate this, all code examples presented in the text, often in abbreviated form for clarity, are available in their complete, executable form in an online code repository. This repository, hosted on GitHub, contains Python scripts and Jupyter Notebooks corresponding to the examples in each chapter, along with necessary dummy data files or instructions for obtaining sample public data where applicable.
-
-The repository can be found at:
-
-**[Astrocomputing Code Repository](https://github.com/ebks/astro-code)** 
-
-Readers are strongly encouraged to clone or download this repository and run the code examples themselves within the recommended `astrocompute-env` Conda environment (see Appendix A) to experiment with the techniques and explore the functionalities of the libraries discussed. The repository will be structured by chapter and example number for easy navigation. We believe that actively engaging with the code is the most effective way to learn and master the concepts presented. Errata and potential updates to the code will also be managed through this repository.
 
 **Note on Examples**
 
